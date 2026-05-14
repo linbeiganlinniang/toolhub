@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { Wrench, MessageSquare, LogIn, LogOut, User } from "lucide-react";
+import { Wrench, MessageSquare, LogIn, LogOut, User, UserCircle } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -49,6 +49,9 @@ export function Navbar() {
                 <p className="text-sm font-medium">{profile?.username}</p>
                 <p className="text-xs text-[#9090a8]">{user.email}</p>
               </div>
+              <Link href="/profile" onClick={() => setMenuOpen(false)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[#c0c0d8] hover:bg-[#2a2a44] transition-colors">
+                <UserCircle size={16} /> 个人资料
+              </Link>
               <button
                 onClick={() => { signOut(); setMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[#f43f5e] hover:bg-[#2a2a44] transition-colors"

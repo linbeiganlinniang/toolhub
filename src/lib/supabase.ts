@@ -97,6 +97,10 @@ export interface Profile {
   username: string;
   avatar_url: string | null;
   bio: string | null;
+  gender: string;
+  age: number | null;
+  website: string;
+  location: string;
   created_at: string;
 }
 
@@ -105,12 +109,20 @@ export interface ProfileInsert {
   username: string;
   avatar_url?: string | null;
   bio?: string | null;
+  gender?: string;
+  age?: number | null;
+  website?: string;
+  location?: string;
 }
 
 export interface ProfileUpdate {
   username?: string;
   avatar_url?: string | null;
   bio?: string | null;
+  gender?: string;
+  age?: number | null;
+  website?: string;
+  location?: string;
 }
 
 export interface Tool {

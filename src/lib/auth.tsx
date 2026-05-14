@@ -12,6 +12,7 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string, username: string) => Promise<{ error?: string }>;
   signInWithOAuth: (provider: "github" | "google") => Promise<void>;
+  updateProfile: (data: { username?: string; avatar_url?: string; bio?: string; gender?: string; age?: number | null; website?: string; location?: string }) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
 }
 
@@ -68,12 +69,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
+  async function updateProfile(data: { username?: string; avatar_url?: string; bio?: string; gender?: string; age?: number | null; website?: string; location?: string }) {
+    if (!user) return { error: "未登录" };
+    const { error } = await supabase.from("profiles").update(data).eq("id", user.id);
+    if (!error) await fetchProfile(user.id);
+    return { error: error?.message };
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signUp, signInWithOAuth, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signUp, signInWithOAuth, updateProfile, signOut }}>
       {children}
     </AuthContext.Provider>
   );
