@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { Wrench, MessageSquare, LogIn, LogOut, Users, UserCircle } from "lucide-react";
+import { Wrench, MessageSquare, LogIn, LogOut, Users, UserCircle, Crown } from "lucide-react";
 import UserAvatar from "@/components/UserAvatar";
 import { useState } from "react";
 
@@ -25,9 +25,14 @@ export function Navbar() {
               <Wrench size={16} /> 工具
             </Link>
             {user && (
-              <Link href="/friends" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors">
-                <Users size={16} /> 好友
-              </Link>
+              <>
+                <Link href="/friends" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors">
+                  <Users size={16} /> 好友
+                </Link>
+                <Link href="/vip" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#f59e0b] hover:bg-[#2a2a44] transition-colors">
+                  <Crown size={16} /> VIP
+                </Link>
+              </>
             )}
           </div>
         </div>

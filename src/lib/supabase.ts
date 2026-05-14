@@ -99,6 +99,8 @@ export interface Profile {
   bio: string | null;
   display_id: number | null;
   role: string;
+  vip_level: number;
+  vip_expires_at: string | null;
   gender: string;
   age: number | null;
   website: string;
