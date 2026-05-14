@@ -4,8 +4,25 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Camera, Save, LogOut, Upload } from "lucide-react";
+import { Loader2, Save, LogOut } from "lucide-react";
 import Link from "next/link";
+
+const PANDA_AVATARS = [
+  ...["🐼","🐻‍❄️","🐨","🐮","🐷","🐸","🐵","🐶","🐱","🦊","🐰","🐹","🐭","🐯","🐻","🦁","🐔","🐧","🐦","🐤","🦄","🐴","🐌","🐛","🦋","🐞","🐙","🦀","🐠","🐳"],
+  ...["😀","😎","🤩","😇","🤪","😜","🤓","🧐","😤","😈","👻","💀","👽","🤖","🎃","🤡","👺","😺","🫠","🥳","🫡","🤠","🥸","😶‍🌫️","🫥","😏","🤯","🥶","🤗","🫣"],
+  ...["🔥","💯","⚡","🌟","💎","🎯","🚀","🎸","🎮","🍕","🌈","🍀","💩","❤️","💙","💚","💛","🧡","💜","🖤"]
+];
+
+const BG_COLORS = ["#6366f1","#22d3ee","#f43f5e","#f59e0b","#22c55e","#a78bfa","#ec4899","#14b8a6","#f97316","#8b5cf6"];
+
+function avatarUrl(emoji: string, bg: string): string {
+  return btoa(JSON.stringify({ emoji, bg }));
+}
+function parseAvatar(raw: string): { emoji: string; bg: string } {
+  try { const d = JSON.parse(atob(raw)); if (d.emoji) return d; } catch {}
+  if (raw.startsWith('http')) return { emoji: "🐼", bg: "#6366f1" };
+  return { emoji: "🐼", bg: "#6366f1" };
+}
 
 export default function ProfilePage() {
   const { user, profile, signOut, updateProfile, loading: authLoading } = useAuth();
@@ -16,8 +33,9 @@ export default function ProfilePage() {
   const [age, setAge] = useState("");
   const [website, setWebsite] = useState("");
   const [location, setLocation] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [selectedEmoji, setSelectedEmoji] = useState("🐼");
+  const [selectedBg, setSelectedBg] = useState("#6366f1");
+  const [showAvatars, setShowAvatars] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -30,34 +48,21 @@ export default function ProfilePage() {
       setAge(profile.age?.toString() || "");
       setWebsite(profile.website || "");
       setLocation(profile.location || "");
-      setAvatarUrl(profile.avatar_url || "");
+      if (profile.avatar_url) {
+        const p = parseAvatar(profile.avatar_url);
+        setSelectedEmoji(p.emoji);
+        setSelectedBg(p.bg);
+      }
     }
   }, [profile, authLoading, user]);
 
   if (authLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#6366f1]" size={32} /></div>;
   if (!user) return null;
 
-  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (ext !== 'jpg' && ext !== 'jpeg' && ext !== 'png') { setMessage("❌ 仅支持 JPG 和 PNG 格式"); return; }
-    if (file.size > 2 * 1024 * 1024) { setMessage("❌ 图片不能超过 2MB"); return; }
-    setAvatarUploading(true);
-    setMessage("");
-    const path = `${user.id}/avatar.${ext}`;
-    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (!error) {
-      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
-      setAvatarUrl(publicUrl);
-      setMessage("✅ 头像已上传，点击保存生效");
-    } else { setMessage("❌ " + error.message); }
-    setAvatarUploading(false);
-  }
-
   async function handleSave() {
     setSaving(true); setMessage("");
-    const { error } = await updateProfile({ username: username.trim(), bio: bio.trim(), gender, age: age ? parseInt(age) : null, website: website.trim(), location: location.trim(), avatar_url: avatarUrl.trim() || undefined });
+    const av = avatarUrl(selectedEmoji, selectedBg);
+    const { error } = await updateProfile({ username: username.trim(), bio: bio.trim(), gender, age: age ? parseInt(age) : null, website: website.trim(), location: location.trim(), avatar_url: av });
     setMessage(error ? "❌ " + error : "✅ 保存成功！");
     setSaving(false);
   }
@@ -69,25 +74,37 @@ export default function ProfilePage() {
 
       <div className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-6 space-y-6">
         <div className="flex items-center gap-4">
-          <label className="relative cursor-pointer group flex-shrink-0">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#6366f1] to-[#22d3ee] flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
-              {avatarUrl ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : username?.[0]?.toUpperCase() || "U"}
+          <button onClick={() => setShowAvatars(!showAvatars)} className="flex-shrink-0 relative group">
+            <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl border-2 border-[#3a3a50] hover:border-[#6366f1] transition-colors" style={{ background: selectedBg }}>
+              {selectedEmoji}
             </div>
-            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              {avatarUploading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
-            </div>
-            <input type="file" accept=".jpg,.jpeg,.png" onChange={handleAvatarUpload} className="hidden" />
-          </label>
-          <div className="flex-1">
-            <p className="text-xs text-[#9090a8] mb-2">头像</p>
-            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#3a3a50] rounded-lg text-xs text-[#9090a8] hover:text-white hover:border-[#6366f1] cursor-pointer transition-colors">
-              <Upload size={14} /> {avatarUrl ? '更换图片' : '上传本地图片'}
-              <input type="file" accept=".jpg,.jpeg,.png" onChange={handleAvatarUpload} className="hidden" />
-            </label>
-            <p className="text-[10px] text-[#606080] mt-1">点击头像或按钮 · 仅 JPG/PNG · ≤2MB</p>
-            {avatarUrl && <p className="text-[10px] text-[#22d3ee] mt-1 truncate max-w-[200px]">已上传 ✓</p>}
+            <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 text-[10px] bg-[#2a2a44] px-2 py-0.5 rounded-full text-[#9090a8]">更换</span>
+          </button>
+          <div>
+            <p className="text-sm font-medium">点击头像更换</p>
+            <p className="text-[10px] text-[#606080]">90 种熊猫头 & 表情可选</p>
           </div>
         </div>
+
+        {showAvatars && (
+          <div className="border border-[#2a2a44] rounded-xl p-4 space-y-3 animate-fade-in">
+            <p className="text-xs text-[#9090a8]">选颜色</p>
+            <div className="flex gap-2 flex-wrap">
+              {BG_COLORS.map(c => (
+                <button key={c} onClick={() => setSelectedBg(c)} className="w-8 h-8 rounded-full border-2 transition-colors" style={{ background: c, borderColor: selectedBg === c ? "#fff" : "transparent" }} />
+              ))}
+            </div>
+            <p className="text-xs text-[#9090a8]">选头像</p>
+            <div className="grid grid-cols-10 gap-1.5 max-h-64 overflow-y-auto pr-1">
+              {PANDA_AVATARS.map(e => (
+                <button key={e} onClick={() => { setSelectedEmoji(e); setShowAvatars(false); }} className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg transition-colors ${selectedEmoji === e ? "bg-white/20 ring-2 ring-white" : "hover:bg-white/10"}`} title={e}>
+                  {e}
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setShowAvatars(false)} className="text-xs text-[#9090a8] hover:text-white w-full text-center py-1">关闭面板</button>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div><label className="block text-xs text-[#9090a8] mb-1">昵称</label><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full bg-[#12122a] border border-[#3a3a50] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1]" maxLength={30} /></div>

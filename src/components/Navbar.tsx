@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 import { Wrench, MessageSquare, LogIn, LogOut, Users, UserCircle } from "lucide-react";
+import UserAvatar from "@/components/UserAvatar";
 import { useState } from "react";
 
 export function Navbar() {
@@ -34,9 +35,7 @@ export function Navbar() {
         <div className="relative">
           {user ? (
             <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-[#2a2a44] transition-colors">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366f1] to-[#22d3ee] flex items-center justify-center text-white text-xs font-bold">
-                {profile?.username?.[0]?.toUpperCase() || "U"}
-              </div>
+              <UserAvatar url={profile?.avatar_url || null} size={28} />
               <span className="hidden sm:inline text-[#c0c0d8]">{profile?.username || "用户"}</span>
             </button>
           ) : (
