@@ -55,7 +55,10 @@ export default function ProfilePage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 animate-fade-in">
-      <h1 className="text-2xl font-bold mb-8">👤 个人资料</h1>
+      <h1 className="text-2xl font-bold mb-2">👤 个人资料</h1>
+      {profile?.display_id && (
+        <p className="text-sm text-[#22d3ee] font-mono mb-6">UID: {profile.display_id}</p>
+      )}
 
       <div className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-6 space-y-6">
         {/* 头像 */}

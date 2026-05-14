@@ -97,6 +97,7 @@ export interface Profile {
   username: string;
   avatar_url: string | null;
   bio: string | null;
+  display_id: number | null;
   gender: string;
   age: number | null;
   website: string;
@@ -119,6 +120,7 @@ export interface ProfileUpdate {
   username?: string;
   avatar_url?: string | null;
   bio?: string | null;
+  display_id?: number | null;
   gender?: string;
   age?: number | null;
   website?: string;

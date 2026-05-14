@@ -3,7 +3,29 @@
 import { useState } from "react";
 import { Copy, Check, RefreshCw } from "lucide-react";
 
-type ToolName = "json" | "base64" | "timestamp" | "color" | "qrcode" | "md5";
+type ToolName = "json" | "base64" | "timestamp" | "color" | "qrcode" | "md5" | "audio";
+
+function encodeWAV(samples: Float32Array[], sampleRate: number, numChannels: number) {
+  const buffer = new ArrayBuffer(44 + samples[0].length * numChannels * 2);
+  const view = new DataView(buffer);
+  const writeString = (o: number, s: string) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+  writeString(0, 'RIFF'); view.setUint32(4, 36 + samples[0].length * numChannels * 2, true);
+  writeString(8, 'WAVE'); writeString(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true); view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * numChannels * 2, true);
+  view.setUint16(32, numChannels * 2, true); view.setUint16(34, 16, true);
+  writeString(36, 'data'); view.setUint32(40, samples[0].length * numChannels * 2, true);
+  let offset = 44;
+  for (let i = 0; i < samples[0].length; i++) {
+    for (let ch = 0; ch < numChannels; ch++) {
+      const s = Math.max(-1, Math.min(1, samples[Math.min(ch, samples.length - 1)][i] || 0));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+  return view;
+}
 
 export default function ToolsPage() {
   const [activeTool, setActiveTool] = useState<ToolName>("json");
@@ -77,6 +99,9 @@ export default function ToolsPage() {
     setRgbOutput(`rgb(${r}, ${g}, ${b}) · hsl(${Math.round(r/2.55)}, ${Math.round(g/2.55)}%, ${Math.round(b/2.55)}%)`);
   }
 
+  const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [audioExporting, setAudioExporting] = useState(false);
+
   const tools: { id: ToolName; name: string; icon: string; desc: string }[] = [
     { id: "json", name: "JSON 格式化", icon: "{ }", desc: "美化、压缩、校验 JSON" },
     { id: "base64", name: "Base64 编解码", icon: "64", desc: "编码和解码 Base64 文本" },
@@ -84,6 +109,7 @@ export default function ToolsPage() {
     { id: "color", name: "颜色转换", icon: "🎨", desc: "HEX ↔ RGB ↔ HSL" },
     { id: "md5", name: "MD5 加密", icon: "🔐", desc: "文本 MD5 哈希" },
     { id: "qrcode", name: "二维码生成", icon: "📱", desc: "文本转二维码" },
+    { id: "audio", name: "音频转换", icon: "🎵", desc: "音频格式转换 & WAV 导出" },
   ];
 
   return (
@@ -237,6 +263,63 @@ export default function ToolsPage() {
             <div className="relative">
               <textarea readOnly id="md5Output" className="w-full h-24 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono text-[#22c55e] resize-none" />
             </div>
+          </div>
+        )}
+
+        {/* Audio */}
+        {activeTool === "audio" && (
+          <div className="space-y-4">
+            <h2 className="font-semibold">🎵 音频格式转换</h2>
+            <p className="text-xs text-[#9090a8] bg-[#12122a] border border-[#2a2a44] rounded-lg p-3">
+              ⚠️ 浏览器端音频转换能力有限。支持将常见音频文件导出为 WAV 格式（无损）。如需 MP3/AAC/FLAC 等格式互转，建议使用桌面端 ffmpeg 或在线服务。
+            </p>
+            <div className="border-2 border-dashed border-[#3a3a50] rounded-xl p-6 text-center hover:border-[#6366f1] transition-colors">
+              <input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                className="hidden"
+                id="audioFileInput"
+              />
+              <label htmlFor="audioFileInput" className="cursor-pointer">
+                <div className="text-4xl mb-2">🎵</div>
+                <p className="text-sm text-[#9090a8]">{audioFile ? audioFile.name : "点击选择音频文件"}</p>
+                {audioFile && <p className="text-xs text-[#606080] mt-1">{(audioFile.size / 1024 / 1024).toFixed(2)} MB · {audioFile.type || '未知格式'}</p>}
+              </label>
+            </div>
+            {audioFile && (
+              <>
+                <audio controls className="w-full" src={URL.createObjectURL(audioFile)} />
+                <button
+                  onClick={async () => {
+                    setAudioExporting(true);
+                    try {
+                      const ctx = new AudioContext();
+                      const buf = await ctx.decodeAudioData(await audioFile.arrayBuffer());
+                      const numCh = buf.numberOfChannels; const sr = buf.sampleRate; const channels = []; for (let c = 0; c < numCh; c++) channels.push(buf.getChannelData(c)); const wav = encodeWAV(channels, sr, numCh);
+                      const blob = new Blob([wav], { type: 'audio/wav' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url; a.download = audioFile.name.replace(/\.[^.]+$/, '') + '.wav';
+                      a.click(); URL.revokeObjectURL(url);
+                    } catch(e) { alert('转换失败：' + e); }
+                    setAudioExporting(false);
+                  }}
+                  disabled={audioExporting}
+                  className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5] disabled:opacity-50"
+                >
+                  {audioExporting ? '转换中…' : '导出为 WAV'}
+                </button>
+              </>
+            )}
+            <details className="text-xs text-[#606080]">
+              <summary className="cursor-pointer hover:text-[#9090a8]">支持的输入格式</summary>
+              <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                <li>MP3, WAV, OGG, FLAC, M4A, AAC, WebM</li>
+                <li>输出格式：WAV (16-bit PCM)</li>
+                <li>加密音频（DRM）无法直接转换</li>
+              </ul>
+            </details>
           </div>
         )}
 
