@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { Loader2, Camera, Save, LogOut } from "lucide-react";
+import { Loader2, Camera, Save, LogOut, Upload } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -18,6 +18,7 @@ export default function ProfilePage() {
   const [website, setWebsite] = useState("");
   const [location, setLocation] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -36,6 +37,23 @@ export default function ProfilePage() {
 
   if (authLoading) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-[#6366f1]" size={32} /></div>;
   if (!user) return null;
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setAvatarUploading(true);
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/avatar.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (!error) {
+      const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+      setAvatarUrl(publicUrl);
+      setMessage("✅ 头像已上传，点击保存生效");
+    } else {
+      setMessage("❌ " + error.message);
+    }
+    setAvatarUploading(false);
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -63,22 +81,27 @@ export default function ProfilePage() {
       <div className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-6 space-y-6">
         {/* 头像 */}
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#6366f1] to-[#22d3ee] flex items-center justify-center text-white text-2xl font-bold overflow-hidden flex-shrink-0">
-            {avatarUrl ? (
-              <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-            ) : (
-              username?.[0]?.toUpperCase() || "U"
-            )}
-          </div>
+          <label className="relative cursor-pointer group flex-shrink-0">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#6366f1] to-[#22d3ee] flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+              ) : (
+                username?.[0]?.toUpperCase() || "U"
+              )}
+            </div>
+            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              {avatarUploading ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
+            </div>
+            <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+          </label>
           <div className="flex-1">
-            <p className="text-xs text-[#9090a8] mb-1">头像 URL</p>
-            <input
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              className="w-full bg-[#12122a] border border-[#3a3a50] rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-[#6366f1]"
-              placeholder="https://example.com/avatar.jpg"
-            />
+            <p className="text-xs text-[#9090a8] mb-2">头像</p>
+            <label className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[#3a3a50] rounded-lg text-xs text-[#9090a8] hover:text-white hover:border-[#6366f1] cursor-pointer transition-colors">
+              <Upload size={14} /> {avatarUrl ? '更换图片' : '上传图片'}
+              <input type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+            </label>
+            <p className="text-[10px] text-[#606080] mt-1">点击头像或按钮上传 · PNG/JPG/GIF · ≤2MB</p>
+            {avatarUrl && <p className="text-[10px] text-[#22d3ee] mt-1 truncate max-w-[200px]">已上传: {avatarUrl.split('/').pop()?.split('?')[0]}</p>}
           </div>
         </div>
 
