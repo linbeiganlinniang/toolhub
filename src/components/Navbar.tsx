@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
-import { Wrench, MessageSquare, LogIn, LogOut, User, UserCircle } from "lucide-react";
+import { Wrench, MessageSquare, LogIn, LogOut, Users, UserCircle } from "lucide-react";
 import { useState } from "react";
 
 export function Navbar() {
@@ -23,15 +23,17 @@ export function Navbar() {
             <Link href="/tools" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors">
               <Wrench size={16} /> 工具
             </Link>
+            {user && (
+              <Link href="/friends" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors">
+                <Users size={16} /> 好友
+              </Link>
+            )}
           </div>
         </div>
 
         <div className="relative">
           {user ? (
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-[#2a2a44] transition-colors"
-            >
+            <button onClick={() => setMenuOpen(!menuOpen)} className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm hover:bg-[#2a2a44] transition-colors">
               <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#6366f1] to-[#22d3ee] flex items-center justify-center text-white text-xs font-bold">
                 {profile?.username?.[0]?.toUpperCase() || "U"}
               </div>
@@ -52,10 +54,7 @@ export function Navbar() {
               <Link href="/profile" onClick={() => setMenuOpen(false)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[#c0c0d8] hover:bg-[#2a2a44] transition-colors">
                 <UserCircle size={16} /> 个人资料
               </Link>
-              <button
-                onClick={() => { signOut(); setMenuOpen(false); }}
-                className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[#f43f5e] hover:bg-[#2a2a44] transition-colors"
-              >
+              <button onClick={() => { signOut(); setMenuOpen(false); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-[#f43f5e] hover:bg-[#2a2a44] transition-colors">
                 <LogOut size={16} /> 退出登录
               </button>
             </div>
@@ -63,7 +62,6 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* 移动端导航 */}
       <div className="sm:hidden flex border-t border-[#2a2a44]">
         <Link href="/forum" className="flex-1 flex items-center justify-center gap-1 py-2 text-xs text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors">
           <MessageSquare size={14} /> 论坛
@@ -71,6 +69,11 @@ export function Navbar() {
         <Link href="/tools" className="flex-1 flex items-center justify-center gap-1 py-2 text-xs text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors">
           <Wrench size={14} /> 工具
         </Link>
+        {user && (
+          <Link href="/friends" className="flex-1 flex items-center justify-center gap-1 py-2 text-xs text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors">
+            <Users size={14} /> 好友
+          </Link>
+        )}
       </div>
     </nav>
   );
