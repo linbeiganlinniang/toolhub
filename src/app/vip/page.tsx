@@ -46,7 +46,7 @@ export default function VipPage() {
               </ul>
               {tier.price > 0 ? (
                 <Link href="/sponsor" className="w-full py-2.5 rounded-lg text-sm font-medium text-center flex items-center justify-center gap-2" style={{ background: tier.color, color: tier.level === 2 ? "#1a1a2e" : "#fff" }}>
-                  赞助支持 <ArrowRight size={14} />
+                  去赞助 <ArrowRight size={14} />
                 </Link>
               ) : (
                 <button disabled className="w-full py-2.5 bg-[#2a2a44] text-[#9090a8] rounded-lg text-sm">默认等级</button>
@@ -64,8 +64,8 @@ export default function VipPage() {
       <div className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-6">
         <h2 className="font-bold text-lg mb-3">❓ 常见问题</h2>
         <div className="space-y-3 text-sm">
-          <details className="text-[#9090a8]"><summary className="cursor-pointer text-[#c0c0d8] hover:text-white">如何支付？</summary><p className="mt-1 ml-4">目前支持支付宝 / 微信扫码支付。赞助页面有收款码。</p></details>
-          <details className="text-[#9090a8]"><summary className="cursor-pointer text-[#c0c0d8] hover:text-white">赞助后如何激活？</summary><p className="mt-1 ml-4">赞助时备注你的 UID，管理员手动激活。或联系管理员。</p></details>
+          <details className="text-[#9090a8]"><summary className="cursor-pointer text-[#c0c0d8] hover:text-white">如何支付？</summary><p className="mt-1 ml-4">通过 Payoneer 全球收款。赞助页面 → Payoneer 链接 → 用信用卡 / 银行卡支付。支持全球货币。</p></details>
+          <details className="text-[#9090a8]"><summary className="cursor-pointer text-[#c0c0d8] hover:text-white">赞助后如何激活？</summary><p className="mt-1 ml-4">支付时备注你的 UID，管理员 24 小时内确认激活。或联系 UID:10001。</p></details>
           <details className="text-[#9090a8]"><summary className="cursor-pointer text-[#c0c0d8] hover:text-white">可以退款吗？</summary><p className="mt-1 ml-4">赞助即支持，原则上不退款。如有特殊情况请联系。</p></details>
           <details className="text-[#9090a8]"><summary className="cursor-pointer text-[#c0c0d8] hover:text-white">赞助的钱花在哪里？</summary><p className="mt-1 ml-4">服务器费用、域名、API 调用费、功能开发和日常维护。</p></details>
         </div>
