@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase, Profile } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
-import { Loader2, ArrowLeft, UserPlus, UserCheck, UserX, Clock } from "lucide-react";
+import { Loader2, ArrowLeft, UserPlus, UserCheck, UserX, Clock, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 interface FriendStatus { status: string; friendshipId: string | null; }
@@ -97,9 +97,10 @@ export default function UserPage() {
           {friendStatus === "pending_received" && (
             <button onClick={acceptRequest} className="flex items-center gap-1.5 px-5 py-2 bg-[#22c55e] text-white rounded-lg text-sm hover:bg-[#16a34a]"><UserCheck size={16} /> 接受好友请求</button>
           )}
-          {friendStatus === "accepted" && (
+          {friendStatus === "accepted" && (<>
+            <Link href={`/messages/${userId}`} className="flex items-center gap-1.5 px-5 py-2 bg-[#22c55e] text-white rounded-lg text-sm hover:bg-[#16a34a]"><MessageCircle size={16} /> 发私信</Link>
             <button onClick={removeFriend} className="flex items-center gap-1.5 px-5 py-2 border border-[#3a3a50] text-[#f43f5e] rounded-lg text-sm hover:bg-[#f43f5e]/10"><UserX size={16} /> 删除好友</button>
-          )}
+          </>)}
         </div>
 
         {actionMsg && <div className={`mx-6 mt-3 text-sm rounded-lg px-3 py-2 ${actionMsg.startsWith("✅") ? "bg-[#22c55e]/10 text-[#22c55e]" : "bg-[#f43f5e]/10 text-[#f43f5e]"}`}>{actionMsg}</div>}

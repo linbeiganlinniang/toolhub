@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
-import { Loader2, UserPlus, UserCheck, UserX, EyeOff, Clock, Search, Hash } from "lucide-react";
+import { Loader2, UserPlus, UserCheck, UserX, EyeOff, Clock, Search, Hash, MessageCircle } from "lucide-react";
 import Link from "next/link";
 
 interface ProfileInfo {
@@ -184,7 +184,10 @@ export default function FriendsPage() {
                   <p className="text-[10px] text-[#606080]">好友</p>
                 </div>
               </Link>
-              <button onClick={() => removeFriend(f.id)} className="p-2 rounded-lg text-[#9090a8] hover:text-[#f43f5e] hover:bg-[#2a2a44] transition-colors" title="删除好友"><UserX size={16} /></button>
+              <div className="flex items-center gap-1">
+                <Link href={`/messages/${f.profile.id}`} className="p-2 rounded-lg text-[#9090a8] hover:text-[#22c55e] hover:bg-[#2a2a44] transition-colors" title="发私信"><MessageCircle size={16} /></Link>
+                <button onClick={() => removeFriend(f.id)} className="p-2 rounded-lg text-[#9090a8] hover:text-[#f43f5e] hover:bg-[#2a2a44] transition-colors" title="删除好友"><UserX size={16} /></button>
+              </div>
             </div>
           ))}
         </div>
