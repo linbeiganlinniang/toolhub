@@ -11,6 +11,7 @@ interface AuthState {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signUp: (email: string, password: string, username: string) => Promise<{ error?: string }>;
+  signInWithOAuth: (provider: "github" | "google") => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -60,12 +61,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error: error?.message };
   }
 
+  async function signInWithOAuth(provider: "github" | "google") {
+    await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/forum` },
+    });
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signUp, signInWithOAuth, signOut }}>
       {children}
     </AuthContext.Provider>
   );
