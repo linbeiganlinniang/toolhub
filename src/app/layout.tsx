@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
+import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "ToolHub - 工具集 & 社区",
-  description: "集合各种工具 + 实时互动论坛",
+  title: "ToolHub",
+  description: "一站式工具集合 + 实时互动社区",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -13,8 +14,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN">
       <body className="min-h-screen flex flex-col">
         <AuthProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
+          <LanguageProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+          </LanguageProvider>
         </AuthProvider>
       </body>
     </html>
