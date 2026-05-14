@@ -136,9 +136,9 @@ export default function ThreadPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 animate-fade-in">
-      <Link href={`/forum/${boardId}`} className="inline-flex items-center gap-1 text-sm text-[#9090a8] hover:text-white mb-4">
+      <button onClick={() => router.push(`/forum/${boardId}`)} className="inline-flex items-center gap-1 text-sm text-[#9090a8] hover:text-white mb-4">
         <ArrowLeft size={16} /> 返回板块
-      </Link>
+      </button>
 
       {/* 帖子主体 */}
       <div className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-6 mb-6">

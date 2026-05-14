@@ -33,16 +33,18 @@ export default function MessagePage() {
     loadMessages();
     loadFriendName();
 
-    // Realtime 订阅
+    // Realtime 订阅 - 简化 filter，客户端过滤
     const channel = supabase
       .channel(`dm-${[user.id, userId].sort().join('-')}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
-        table: 'private_messages',
-        filter: `or(and(sender_id=eq.${user.id},receiver_id=eq.${userId}),and(sender_id=eq.${userId},receiver_id=eq.${user.id}))`
+        table: 'private_messages'
       }, (payload) => {
-        setMessages(prev => [...prev, payload.new as DM]);
+        const m = payload.new as DM;
+        if ((m.sender_id === user.id && m.receiver_id === userId) || (m.sender_id === userId && m.receiver_id === user.id)) {
+          setMessages(prev => [...prev, m]);
+        }
       })
       .subscribe();
     channelRef.current = channel;
