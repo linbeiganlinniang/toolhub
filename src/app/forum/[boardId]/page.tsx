@@ -316,7 +316,7 @@ export default function BoardPage() {
           )}
 
           {threads.map((thread) => (
-            <div key={thread.id} className="bg-[#1a1a30] border border-[#2a2a44] rounded-xl p-4 hover:border-[#6366f1]/30 transition-colors animate-fade-in">
+            <Link key={thread.id} href={`/forum/${boardId}/${thread.id}`} className="block bg-[#1a1a30] border border-[#2a2a44] rounded-xl p-4 hover:border-[#6366f1]/30 transition-colors animate-fade-in">
               <div className="flex items-start gap-2">
                 {thread.is_pinned && <Pin size={14} className="text-[#f59e0b] mt-0.5 flex-shrink-0" />}
                 <div className="flex-1 min-w-0">
@@ -325,7 +325,7 @@ export default function BoardPage() {
                   <p className="text-[10px] text-[#606080]">{fmtTime(thread.created_at)}</p>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
 
           {threads.length === 0 && !user && (
