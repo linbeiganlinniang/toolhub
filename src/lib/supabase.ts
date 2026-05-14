@@ -98,6 +98,7 @@ export interface Profile {
   avatar_url: string | null;
   bio: string | null;
   display_id: number | null;
+  role: string;
   gender: string;
   age: number | null;
   website: string;
