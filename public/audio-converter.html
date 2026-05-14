@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎵 ToolHub 音频格式转换器</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:#1a1a2e;color:#e4e4f0;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+h1{font-size:28px;background:linear-gradient(135deg,#6366f1,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.subtitle{color:#9090a8;font-size:14px;margin-bottom:32px}
+.card{background:#16162a;border:1px solid #2a2a44;border-radius:16px;padding:24px;width:100%;max-width:600px}
+.step{margin-bottom:20px}
+.step label{display:block;font-size:13px;color:#9090a8;margin-bottom:6px}
+.file-zone{border:2px dashed #3a3a50;border-radius:12px;padding:40px;text-align:center;cursor:pointer;transition:all .2s}
+.file-zone:hover{border-color:#6366f1;background:rgba(99,102,241,.05)}
+.file-zone .icon{font-size:48px;margin-bottom:8px}
+.file-info{font-size:13px;color:#22d3ee;margin-top:12px}
+select,input[type=text]{width:100%;background:#12122a;border:1px solid #3a3a50;border-radius:8px;padding:12px;color:#e4e4f0;font-size:14px;outline:none;transition:border .2s}
+select:focus,input:focus{border-color:#6366f1}
+.btn{width:100%;padding:14px;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
+.btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(99,102,241,.4)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.progress{margin-top:16px;height:8px;background:#2a2a44;border-radius:4px;overflow:hidden;display:none}
+.progress.active{display:block}
+.progress .bar{height:100%;background:linear-gradient(90deg,#6366f1,#22d3ee);border-radius:4px;width:0%;transition:width .3s}
+.status{margin-top:12px;font-size:13px;color:#9090a8;text-align:center}
+.status.success{color:#22c55e}
+.status.error{color:#f43f5e}
+.format-hint{font-size:12px;color:#606080;margin-top:8px;line-height:1.6}
+.format-hint code{background:#12122a;padding:2px 6px;border-radius:4px;color:#22d3ee}
+input[type=file]{display:none}
+</style>
+</head>
+<body>
+<h1>🎵 音频格式转换器</h1>
+<p class="subtitle">基于 ffmpeg.wasm · 离线可用 · 支持数十种格式互转</p>
+
+<div class="card">
+  <div class="step">
+    <label>① 选择音频文件</label>
+    <div id="dropZone" class="file-zone" onclick="document.getElementById('fileInput').click()">
+      <div class="icon">🎵</div>
+      <span id="fileName">点击选择 或 拖放文件到此处</span>
+    </div>
+    <input type="file" id="fileInput" accept="audio/*">
+    <div class="file-info" id="fileInfo" style="display:none"></div>
+  </div>
+
+  <div class="step">
+    <label>② 输出格式</label>
+    <select id="outFormat">
+      <optgroup label="常用">
+        <option value="mp3">MP3</option>
+        <option value="wav">WAV (无损)</option>
+        <option value="ogg">OGG</option>
+        <option value="aac">AAC / M4A</option>
+        <option value="flac">FLAC (无损)</option>
+      </optgroup>
+      <optgroup label="更多">
+        <option value="wma">WMA</option>
+        <option value="aiff">AIFF</option>
+        <option value="au">AU</option>
+        <option value="ac3">AC3</option>
+        <option value="amr">AMR</option>
+        <option value="opus">Opus</option>
+        <option value="webm">WebM (Vorbis)</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <div class="step">
+    <label>③ 比特率（可选）</label>
+    <input type="text" id="bitrate" placeholder="留空自动 · 例如 128k, 192k, 320k">
+  </div>
+
+  <button class="btn" id="convertBtn" disabled>
+    ⏳ 加载 ffmpeg 引擎中...
+  </button>
+  <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
+  <div class="status" id="status"></div>
+
+  <div class="format-hint" style="margin-top:20px">
+    <strong>💡 支持转换的格式：</strong><br>
+    输入：<code>mp3</code> <code>wav</code> <code>ogg</code> <code>flac</code> <code>aac</code> <code>m4a</code> <code>wma</code> <code>aiff</code> <code>opus</code> <code>webm</code> <code>ac3</code> <code>amr</code> <code>au</code> 等<br>
+    输出：任意选择的目标格式<br>
+    <strong>⚠️ 首次加载需下载 ffmpeg 核心（~31MB），仅需一次，后续立即可用。</strong><br>
+    <strong>🔒 加密音频（DRM）：</strong>大部分加密音频无法被 ffmpeg 识别，需先用其他工具解密。
+  </div>
+</div>
+
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script>
+const { FFmpeg } = FFmpegWASM;
+const ffmpeg = new FFmpeg();
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const convertBtn = document.getElementById('convertBtn');
+const progress = document.getElementById('progress');
+const bar = document.getElementById('bar');
+const status = document.getElementById('status');
+const fileName = document.getElementById('fileName');
+const fileInfo = document.getElementById('fileInfo');
+
+let selectedFile = null;
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#22d3ee'; });
+dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = '#3a3a50');
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.style.borderColor = '#3a3a50';
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+
+fileInput.addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (f) handleFile(f);
+});
+
+function handleFile(f) {
+  selectedFile = f;
+  fileName.textContent = f.name;
+  fileInfo.style.display = 'block';
+  fileInfo.textContent = `📁 ${(f.size/1024/1024).toFixed(2)} MB · ${f.type || '未知'}`;
+  convertBtn.disabled = false;
+}
+
+ffmpeg.on('progress', ({ progress: p }) => {
+  bar.style.width = Math.round(p * 100) + '%';
+});
+
+ffmpeg.on('log', ({ message }) => {
+  if (message.includes('Error') || message.includes('error')) {
+    status.textContent = '⚠️ ' + message.substring(0, 200);
+    status.className = 'status error';
+  }
+});
+
+(async () => {
+  try {
+    status.textContent = '正在加载 ffmpeg 引擎（首次 ~31MB）...';
+    status.className = 'status';
+    progress.classList.add('active');
+    bar.style.width = '10%';
+    await ffmpeg.load();
+    bar.style.width = '100%';
+    progress.classList.remove('active');
+    status.textContent = '✅ ffmpeg 加载完成，请选择文件';
+    status.className = 'status success';
+    convertBtn.textContent = '🚀 开始转换';
+    convertBtn.disabled = true;
+  } catch(e) {
+    status.textContent = '❌ ffmpeg 加载失败: ' + e.message + '（请检查网络连接）';
+    status.className = 'status error';
+    convertBtn.textContent = '❌ 引擎加载失败';
+  }
+})();
+
+convertBtn.addEventListener('click', async () => {
+  if (!selectedFile) return;
+  convertBtn.disabled = true;
+  progress.classList.add('active');
+  bar.style.width = '0%';
+  status.textContent = '正在转换...';
+  status.className = 'status';
+
+  const outFormat = document.getElementById('outFormat').value;
+  const bitrate = document.getElementById('bitrate').value.trim() || '';
+  const inName = selectedFile.name;
+  const baseName = inName.replace(/\.[^.]+$/, '');
+  const outName = baseName + '.' + (outFormat === 'aac' ? 'm4a' : outFormat);
+
+  try {
+    const data = new Uint8Array(await selectedFile.arrayBuffer());
+    await ffmpeg.writeFile('input.' + inName.split('.').pop(), data);
+
+    const args = ['-i', 'input.' + inName.split('.').pop()];
+    if (bitrate && bitrate !== '') args.push('-b:a', bitrate);
+    if (outFormat === 'mp3') args.push('-codec:a', 'libmp3lame');
+    if (outFormat === 'aac') args.push('-codec:a', 'aac');
+    args.push(outName);
+
+    await ffmpeg.exec(args);
+    const output = await ffmpeg.readFile(outName);
+    const blob = new Blob([output.buffer], { type: 'audio/' + (outFormat === 'aac' ? 'mp4' : outFormat === 'ogg' ? 'ogg' : outFormat) });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = outName; a.click();
+    URL.revokeObjectURL(url);
+
+    progress.classList.remove('active');
+    status.textContent = '✅ 转换完成！文件已自动下载：' + outName;
+    status.className = 'status success';
+  } catch(e) {
+    progress.classList.remove('active');
+    status.textContent = '❌ 转换失败：' + e.message;
+    status.className = 'status error';
+  }
+  convertBtn.disabled = false;
+});
+</script>
+</body>
+</html>

@@ -312,12 +312,20 @@ export default function ToolsPage() {
                 </button>
               </>
             )}
+            <a
+              href="/audio-converter.html"
+              download="ToolHub-AudioConverter.html"
+              className="block w-full py-3 bg-gradient-to-r from-[#6366f1] to-[#22d3ee] text-white rounded-lg text-sm font-medium text-center hover:opacity-90 transition-opacity"
+            >
+              💻 下载桌面版（支持 MP3/WAV/OGG/FLAC/AAC 互转 · ffmpeg）
+            </a>
+            <p className="text-[10px] text-[#606080] text-center">基于 ffmpeg.wasm · 双击 HTML 即可使用 · 支持数十种格式互转</p>
             <details className="text-xs text-[#606080]">
-              <summary className="cursor-pointer hover:text-[#9090a8]">支持的输入格式</summary>
+              <summary className="cursor-pointer hover:text-[#9090a8]">更多说明</summary>
               <ul className="list-disc pl-4 mt-1 space-y-0.5">
-                <li>MP3, WAV, OGG, FLAC, M4A, AAC, WebM</li>
-                <li>输出格式：WAV (16-bit PCM)</li>
-                <li>加密音频（DRM）无法直接转换</li>
+                <li>桌面版下载后双击即用，离线可用</li>
+                <li>首次加载需联网下载 ffmpeg 核心 (~31MB)</li>
+                <li>加密/DRM 音频无法转换</li>
               </ul>
             </details>
           </div>
