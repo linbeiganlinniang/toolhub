@@ -21,6 +21,7 @@ export default function BoardPage() {
   const [messages, setMessages] = useState<MessageWithAuthor[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"threads" | "chat">("chat");
+  const [onlineCount, setOnlineCount] = useState(0);
 
   // 发帖
   const [showNewThread, setShowNewThread] = useState(false);
@@ -65,7 +66,9 @@ export default function BoardPage() {
     if (!boardId) return;
 
     const channel = supabase
-      .channel(`board-${boardId}`)
+      .channel(`board-${boardId}`, {
+        config: { presence: { key: user?.id || "anon" } },
+      })
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `board_id=eq.${boardId}` },
@@ -81,11 +84,22 @@ export default function BoardPage() {
             });
         }
       )
-      .subscribe();
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        setOnlineCount(Object.keys(state).length);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            user: profile?.username || "访客",
+            online_at: new Date().toISOString(),
+          });
+        }
+      });
 
     channelRef.current = channel;
     return () => { supabase.removeChannel(channel); };
-  }, [boardId]);
+  }, [boardId, user?.id, profile?.username]);
 
   // 滚动到底
   useEffect(() => {
@@ -181,6 +195,10 @@ export default function BoardPage() {
         <div>
           <h1 className="text-xl font-bold">{board.name}</h1>
           <p className="text-xs text-[#9090a8]">{board.description}</p>
+        </div>
+        <div className="ml-auto flex items-center gap-1.5 text-xs text-[#22c55e] bg-[#22c55e]/10 px-2 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-[#22c55e] animate-pulse" />
+          {onlineCount} 在线
         </div>
       </div>
 
