@@ -233,6 +233,11 @@ const en = {
       desc: "Modern minimal auto-clicker · Left/middle/right click with configurable CPS and hotkeys",
       note: "Modern UI design, customizable click interval",
     },
+    claudecode: {
+      name: "Claude Code Desktop",
+      desc: "AI coding assistant desktop launcher · Install, update & launch in one click",
+      note: "Requires Node.js. Auto-installs Claude Code on first run",
+    },
   },
 
   // Sponsor Page  

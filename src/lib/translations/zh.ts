@@ -233,6 +233,11 @@ const zh = {
       desc: "极简现代风连点器 · 左/中/右键连点，可设CPS和热键",
       note: "现代UI设计，支持自定义点击间隔",
     },
+    claudecode: {
+      name: "Claude Code 桌面版",
+      desc: "AI 编程助手桌面启动器 · 安装/更新/启动一站式",
+      note: "需安装 Node.js，首次运行自动安装 Claude Code",
+    },
   },
 
   // Sponsor Page  
