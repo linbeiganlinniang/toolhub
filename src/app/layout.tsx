@@ -5,7 +5,7 @@ import { LanguageProvider } from "@/lib/i18n";
 import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
-  title: "ToolHub",
+  title: "熊猫创客",
   description: "一站式工具集合 + 实时互动社区",
 };
 

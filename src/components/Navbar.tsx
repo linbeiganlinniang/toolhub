@@ -17,7 +17,7 @@ export function Navbar() {
     <nav className="bg-[#16162a] border-b border-[#2a2a44] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/" className="text-xl font-bold bg-gradient-to-r from-[#6366f1] to-[#22d3ee] bg-clip-text text-transparent">ToolHub</Link>
+          <Link href="/" className="text-xl font-bold bg-gradient-to-r from-[#6366f1] to-[#22d3ee] bg-clip-text text-transparent">熊猫创客</Link>
           <div className="hidden sm:flex items-center gap-1">
             <Link href="/forum" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors"><MessageSquare size={16} /> {t("nav.forum")}</Link>
             <Link href="/tools" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-[#b0b0c8] hover:text-white hover:bg-[#2a2a44] transition-colors"><Wrench size={16} /> {t("nav.tools")}</Link>

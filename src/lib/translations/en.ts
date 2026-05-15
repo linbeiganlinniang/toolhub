@@ -12,16 +12,16 @@ const en = {
 
   // Home Page
   home: {
-    heroTitle: "ToolHub",
+    heroTitle: "PandaMaker",
     heroDesc: "All-in-one tool collection + realtime community. Great tools, great chats.",
     exploreTools: "Explore Tools",
     enterForum: "Enter Forum",
     feature1Title: "Utility Tools",
-    feature1Desc: "JSON formatter, Base64, timestamp converter… more tools coming",
+    feature1Desc: "JSON formatter, Base64, timestamp converter... more tools coming",
     feature2Title: "Realtime Forum",
     feature2Desc: "Topic-based boards with realtime group chat, messages delivered instantly",
     feature3Title: "Community",
-    feature3Desc: "Post, reply, realtime chat — a happy hangout for tech enthusiasts",
+    feature3Desc: "Post, reply, realtime chat - a happy hangout for tech enthusiasts",
     ctaTitle: "Free · Open-source · Zero-cost",
     ctaDesc: "Built on Cloudflare + Vercel + Supabase, free tier supports thousands of users.",
     joinNow: "Join Now",
@@ -87,7 +87,7 @@ const en = {
       selectFile: "Click to select audio file",
       unknownFormat: "Unknown format",
       exportWav: "Export as WAV",
-      converting: "Converting…",
+      converting: "Converting...",
       downloadDesktop: "💻 Download Desktop Version (supports MP3/WAV/OGG/FLAC/AAC · ffmpeg)",
       desktopNote: "Powered by ffmpeg.wasm · Double-click HTML to use · Supports dozens of formats",
       moreInfo: "More Info",
@@ -158,12 +158,12 @@ const en = {
   // Login Page
   login: {
     title: "👋 Welcome Back",
-    subtitle: "Sign in to your ToolHub account",
+    subtitle: "Sign in to your PandaMaker account",
     registerTitle: "🚀 Create Account",
-    registerSubtitle: "Join the ToolHub community",
+    registerSubtitle: "Join the PandaMaker community",
     githubLogin: "Sign in with GitHub",
     googleLogin: "Sign in with Google",
-    redirecting: "Redirecting…",
+    redirecting: "Redirecting...",
     orEmail: "or use email",
     username: "Username",
     usernamePlaceholder: "Your nickname",
@@ -178,14 +178,14 @@ const en = {
     goRegister: "Sign up",
     goLogin: "Sign in",
     backToHome: "← Back to Home",
-    registerSuccess: "Registration successful! Email verification is disabled — you can sign in directly.",
+    registerSuccess: "Registration successful! Email verification is disabled - you can sign in directly.",
     usernameRequired: "Please enter a username",
   },
 
   // VIP Page
   vip: {
-    title: "💎 ToolHub Membership",
-    subtitle: "Support ToolHub and unlock exclusive perks",
+    title: "💎 PandaMaker Membership",
+    subtitle: "Support PandaMaker and unlock exclusive perks",
     thanksTitle: "Thank you for your support!",
     thanksDesc: "Current tier",
     validUntil: "Valid until",
@@ -217,9 +217,27 @@ const en = {
     orSponsorAny: "Or custom sponsorship amount",
   },
 
-  // Sponsor Page
+  // Desktop Tools
+  desktop: {
+    title: "💻 Desktop Tools",
+    subtitle: "One-click download, double-click to run · Runs locally, safer",
+    download: "Download",
+    size: "Size",
+    keymousego: {
+      name: "KeymouseGo",
+      desc: "Lightweight keystroke/mouse recorder & player · Record and replay mouse & keyboard actions with loops and hotkeys",
+      note: "Open-source freeware, F6 to start/F9 to stop, configurable repeat count and interval",
+    },
+    alphaclicker: {
+      name: "AlphaClicker",
+      desc: "Modern minimal auto-clicker · Left/middle/right click with configurable CPS and hotkeys",
+      note: "Modern UI design, customizable click interval",
+    },
+  },
+
+  // Sponsor Page  
   sponsor: {
-    title: "🤝 Sponsor ToolHub",
+    title: "🤝 Sponsor PandaMaker",
     subtitle: "Every bit of support takes us further",
     silverMonth: "Silver Sponsor · Monthly",
     goldMonth: "Gold Sponsor · Monthly",
@@ -234,7 +252,7 @@ const en = {
     thanksDesc: "Your VIP perks will be activated automatically after payment is confirmed.",
     backToVip: "Back to Membership Center",
     backToVipBottom: "← Back to Membership Center",
-    processing: "Processing…",
+    processing: "Processing...",
     payWithStripe: "Pay with Stripe",
     payNote: "Supports credit cards / Alipay / WeChat Pay",
   },

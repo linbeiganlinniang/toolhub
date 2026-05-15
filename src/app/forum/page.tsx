@@ -1,11 +1,15 @@
 "use client";
 
+"use client";
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase, Board } from "@/lib/supabase";
 import { Hash, Loader2 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 export default function ForumPage() {
+  const { t } = useTranslation();
   const [boards, setBoards] = useState<Board[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,7 +34,7 @@ export default function ForumPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">📋 论坛板块</h1>
+      <h1 className="text-2xl font-bold mb-6">{t("forum.title")}</h1>
       <div className="grid gap-3">
         {boards.map((board) => (
           <Link
@@ -50,7 +54,7 @@ export default function ForumPage() {
         ))}
         {boards.length === 0 && (
           <div className="text-center py-12 text-[#9090a8]">
-            <p>暂无板块，请先在 Supabase 中运行 SQL 迁移脚本</p>
+            <p>{t("forum.noBoards")}</p>
           </div>
         )}
       </div>

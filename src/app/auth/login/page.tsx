@@ -5,9 +5,11 @@ import { useAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useTranslation } from "@/lib/i18n";
 
 export default function LoginPage() {
   const { signIn, signUp, signInWithOAuth, user } = useAuth();
+  const { t } = useTranslation();
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -35,13 +37,13 @@ export default function LoginPage() {
       else router.push("/forum");
     } else {
       if (!username.trim()) {
-        setError("请输入用户名");
+        setError(t("login.usernameRequired"));
         setLoading(false);
         return;
       }
       const { error } = await signUp(email, password, username.trim());
       if (error) setError(error);
-      else setSuccess("注册成功！已关闭邮箱验证，可直接登录。");
+      else setSuccess(t("login.registerSuccess"));
     }
     setLoading(false);
   }
@@ -60,10 +62,10 @@ export default function LoginPage() {
       <div className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-8">
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold mb-1">
-            {mode === "login" ? "👋 欢迎回来" : "🚀 创建账号"}
+            {mode === "login" ? t("login.title") : t("login.registerTitle")}
           </h1>
           <p className="text-sm text-[#9090a8]">
-            {mode === "login" ? "登录你的 ToolHub 账号" : "加入 ToolHub 社区"}
+            {mode === "login" ? t("login.subtitle") : t("login.registerSubtitle")}
           </p>
         </div>
 
@@ -81,7 +83,7 @@ export default function LoginPage() {
                 <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
               </svg>
             )}
-            <span>{oauthLoading === "github" ? "跳转中…" : "使用 GitHub 登录"}</span>
+            <span>{oauthLoading === "github" ? t("login.redirecting") : t("login.githubLogin")}</span>
           </button>
 
           <button
@@ -99,13 +101,13 @@ export default function LoginPage() {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
             )}
-            <span>{oauthLoading === "google" ? "跳转中…" : "使用 Google 登录"}</span>
+            <span>{oauthLoading === "google" ? t("login.redirecting") : t("login.googleLogin")}</span>
           </button>
         </div>
 
         <div className="flex items-center gap-3 mb-6">
           <div className="flex-1 h-px bg-[#2a2a44]" />
-          <span className="text-xs text-[#606080]">或使用邮箱</span>
+          <span className="text-xs text-[#606080]">{t("login.orEmail")}</span>
           <div className="flex-1 h-px bg-[#2a2a44]" />
         </div>
 
@@ -123,35 +125,35 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "register" && (
             <div>
-              <label className="block text-sm font-medium mb-1 text-[#c0c0d8]">用户名</label>
+              <label className="block text-sm font-medium mb-1 text-[#c0c0d8]">{t("login.username")}</label>
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full bg-[#12122a] border border-[#3a3a50] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#6366f1] transition-colors"
-                placeholder="你的昵称"
+                placeholder={t("login.usernamePlaceholder")}
               />
             </div>
           )}
           <div>
-            <label className="block text-sm font-medium mb-1 text-[#c0c0d8]">邮箱</label>
+            <label className="block text-sm font-medium mb-1 text-[#c0c0d8]">{t("login.email")}</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-[#12122a] border border-[#3a3a50] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#6366f1] transition-colors"
-              placeholder="your@email.com"
+              placeholder={t("login.emailPlaceholder")}
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1 text-[#c0c0d8]">密码</label>
+            <label className="block text-sm font-medium mb-1 text-[#c0c0d8]">{t("login.password")}</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full bg-[#12122a] border border-[#3a3a50] rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-[#6366f1] transition-colors"
-              placeholder="至少 6 位"
+              placeholder={t("login.passwordPlaceholder")}
               required
               minLength={6}
             />
@@ -166,7 +168,7 @@ export default function LoginPage() {
               <Loader2 size={18} className="animate-spin" />
             ) : (
               <>
-                {mode === "login" ? "登录" : "注册"} <ArrowRight size={16} />
+                {mode === "login" ? t("login.loginBtn") : t("login.registerBtn")} <ArrowRight size={16} />
               </>
             )}
           </button>
@@ -174,15 +176,15 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-[#9090a8]">
           {mode === "login" ? (
-            <>还没有账号？<button onClick={() => setMode("register")} className="text-[#6366f1] hover:underline">立即注册</button></>
+            <>{t("login.noAccount")}<button onClick={() => setMode("register")} className="text-[#6366f1] hover:underline">{t("login.goRegister")}</button></>
           ) : (
-            <>已有账号？<button onClick={() => setMode("login")} className="text-[#6366f1] hover:underline">去登录</button></>
+            <>{t("login.hasAccount")}<button onClick={() => setMode("login")} className="text-[#6366f1] hover:underline">{t("login.goLogin")}</button></>
           )}
         </div>
       </div>
 
       <p className="text-center text-xs text-[#606080] mt-6">
-        <Link href="/" className="hover:text-[#9090a8]">← 返回首页</Link>
+        <Link href="/" className="hover:text-[#9090a8]">{t("login.backToHome")}</Link>
       </p>
     </div>
   );

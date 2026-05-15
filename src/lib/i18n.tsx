@@ -11,12 +11,14 @@ type Locale = (typeof supportedLocales)[number];
 interface I18nState {
   locale: Locale;
   t: (key: string, params?: Record<string, string | number>) => string;
+  ta: (key: string) => string[];
   setLocale: (locale: string) => void;
 }
 
 const I18nContext = createContext<I18nState>({
   locale: "zh",
   t: (key: string) => key,
+  ta: () => [],
   setLocale: () => {},
 });
 
@@ -51,14 +53,14 @@ function detectLanguage(): Locale {
 }
 
 // Resolve nested keys like "nav.forum" or "tools.json.format"
-function getNestedValue(obj: Record<string, any>, path: string): string | undefined {
+function getNestedValue(obj: Record<string, any>, path: string): any | undefined {
   const keys = path.split(".");
   let current: any = obj;
   for (const key of keys) {
     if (current == null || typeof current !== "object") return undefined;
     current = current[key];
   }
-  return typeof current === "string" ? current : undefined;
+  return current;
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
@@ -85,11 +87,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     (key: string, params?: Record<string, string | number>): string => {
       const dict = translations[locale];
       let value = getNestedValue(dict as unknown as Record<string, any>, key);
-      if (value == null) {
+      if (value == null || typeof value !== "string") {
         // Fallback to zh
         value = getNestedValue(zh as unknown as Record<string, any>, key);
       }
-      if (value == null) return key;
+      if (value == null || typeof value !== "string") return key;
 
       // Simple template replacement {{var}}
       if (params) {
@@ -100,8 +102,20 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     [locale],
   );
 
+  const ta = useCallback(
+    (key: string): string[] => {
+      const dict = translations[locale];
+      let value = getNestedValue(dict as unknown as Record<string, any>, key);
+      if (!Array.isArray(value)) {
+        value = getNestedValue(zh as unknown as Record<string, any>, key);
+      }
+      return Array.isArray(value) ? value : [];
+    },
+    [locale],
+  );
+
   return (
-    <I18nContext.Provider value={{ locale, t, setLocale }}>
+    <I18nContext.Provider value={{ locale, t, ta, setLocale }}>
       {children}
     </I18nContext.Provider>
   );

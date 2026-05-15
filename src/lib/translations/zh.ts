@@ -12,7 +12,7 @@ const zh = {
 
   // Home Page
   home: {
-    heroTitle: "ToolHub",
+    heroTitle: "熊猫创客",
     heroDesc: "一站式工具集合 + 实时互动社区。工具趁手，聊得尽兴。",
     exploreTools: "探索工具",
     enterForum: "进入论坛",
@@ -158,9 +158,9 @@ const zh = {
   // Login Page
   login: {
     title: "👋 欢迎回来",
-    subtitle: "登录你的 ToolHub 账号",
+    subtitle: "登录你的 熊猫创客 账号",
     registerTitle: "🚀 创建账号",
-    registerSubtitle: "加入 ToolHub 社区",
+    registerSubtitle: "加入 熊猫创客 社区",
     githubLogin: "使用 GitHub 登录",
     googleLogin: "使用 Google 登录",
     redirecting: "跳转中…",
@@ -184,8 +184,8 @@ const zh = {
 
   // VIP Page
   vip: {
-    title: "💎 ToolHub 会员",
-    subtitle: "赞助支持 ToolHub 持续运营，解锁专属特权",
+    title: "💎 熊猫创客 会员",
+    subtitle: "赞助支持 熊猫创客 持续运营，解锁专属特权",
     thanksTitle: "感谢你的赞助！",
     thanksDesc: "当前等级",
     validUntil: "有效期至",
@@ -217,9 +217,27 @@ const zh = {
     orSponsorAny: "或自定义赞助金额",
   },
 
+  // Desktop Tools
+  desktop: {
+    title: "💻 桌面版工具",
+    subtitle: "一键下载，双击即用 · 本地运行更安全",
+    download: "下载",
+    size: "大小",
+    keymousego: {
+      name: "KeymouseGo",
+      desc: "精简版按键精灵 · 录制鼠标键盘操作并回放，支持循环执行、热键控制",
+      note: "开源免费，F6启动/F9停止，可设置执行次数和间隔",
+    },
+    alphaclicker: {
+      name: "AlphaClicker",
+      desc: "极简现代风连点器 · 左/中/右键连点，可设CPS和热键",
+      note: "现代UI设计，支持自定义点击间隔",
+    },
+  },
+
   // Sponsor Page  
   sponsor: {
-    title: "🤝 赞助 ToolHub",
+    title: "🤝 赞助 熊猫创客",
     subtitle: "每一份支持都让我们走得更远",
     silverMonth: "银牌赞助 · 月",
     goldMonth: "金牌赞助 · 月",

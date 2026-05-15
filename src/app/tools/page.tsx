@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, RefreshCw } from "lucide-react";
+import { Copy, Check, RefreshCw, Download, Monitor } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
 
 type ToolName = "json" | "base64" | "timestamp" | "color" | "qrcode" | "md5" | "audio";
 
@@ -28,7 +29,9 @@ function encodeWAV(samples: Float32Array[], sampleRate: number, numChannels: num
 }
 
 export default function ToolsPage() {
+  const { t } = useTranslation();
   const [activeTool, setActiveTool] = useState<ToolName>("json");
+  const [mode, setMode] = useState<"online" | "desktop">("online");
   const [copied, setCopied] = useState<string | null>(null);
 
   // JSON
@@ -59,7 +62,7 @@ export default function ToolsPage() {
       const obj = JSON.parse(jsonInput);
       setJsonOutput(JSON.stringify(obj, null, 2));
     } catch {
-      setJsonOutput("❌ JSON 格式错误");
+      setJsonOutput(t("tools.json.formatError"));
     }
   }
 
@@ -71,7 +74,7 @@ export default function ToolsPage() {
         setB64Output(decodeURIComponent(escape(atob(b64Input))));
       }
     } catch {
-      setB64Output("❌ 输入无效");
+      setB64Output(t("tools.base64.invalid"));
     }
   }
 
@@ -85,14 +88,14 @@ export default function ToolsPage() {
       setTsOutput(d.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" }));
     } else {
       const d = new Date(v);
-      if (isNaN(d.getTime())) { setTsOutput("❌ 格式错误"); return; }
+      if (isNaN(d.getTime())) { setTsOutput(t("tools.timestamp.formatError")); return; }
       setTsOutput(Math.floor(d.getTime() / 1000).toString());
     }
   }
 
   function handleColor() {
     const h = hexInput.trim();
-    if (!/^#[0-9a-fA-F]{6}$/.test(h)) { setRgbOutput("❌ 请输入 #RRGGBB 格式"); return; }
+    if (!/^#[0-9a-fA-F]{6}$/.test(h)) { setRgbOutput(t("tools.color.formatError")); return; }
     const r = parseInt(h.slice(1, 3), 16);
     const g = parseInt(h.slice(3, 5), 16);
     const b = parseInt(h.slice(5, 7), 16);
@@ -102,50 +105,62 @@ export default function ToolsPage() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [audioExporting, setAudioExporting] = useState(false);
 
-  const tools: { id: ToolName; name: string; icon: string; desc: string }[] = [
-    { id: "json", name: "JSON 格式化", icon: "{ }", desc: "美化、压缩、校验 JSON" },
-    { id: "base64", name: "Base64 编解码", icon: "64", desc: "编码和解码 Base64 文本" },
-    { id: "timestamp", name: "时间戳转换", icon: "🕐", desc: "Unix 时间戳 ↔ 日期" },
-    { id: "color", name: "颜色转换", icon: "🎨", desc: "HEX ↔ RGB ↔ HSL" },
-    { id: "md5", name: "MD5 加密", icon: "🔐", desc: "文本 MD5 哈希" },
-    { id: "qrcode", name: "二维码生成", icon: "📱", desc: "文本转二维码" },
-    { id: "audio", name: "音频转换", icon: "🎵", desc: "音频格式转换 & WAV 导出" },
+  const tools: { id: ToolName; nameKey: string; icon: string; descKey: string }[] = [
+    { id: "json", nameKey: "tools.json.name", icon: "{ }", descKey: "tools.json.desc" },
+    { id: "base64", nameKey: "tools.base64.name", icon: "64", descKey: "tools.base64.desc" },
+    { id: "timestamp", nameKey: "tools.timestamp.name", icon: "🕐", descKey: "tools.timestamp.desc" },
+    { id: "color", nameKey: "tools.color.name", icon: "🎨", descKey: "tools.color.desc" },
+    { id: "md5", nameKey: "tools.md5.name", icon: "🔐", descKey: "tools.md5.desc" },
+    { id: "qrcode", nameKey: "tools.qrcode.name", icon: "📱", descKey: "tools.qrcode.desc" },
+    { id: "audio", nameKey: "tools.audio.name", icon: "🎵", descKey: "tools.audio.desc" },
   ];
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">🔧 在线工具</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <h1 className="text-2xl font-bold">{mode === "online" ? t("tools.title") : t("desktop.title")}</h1>
+        <div className="flex gap-1 bg-[#12122a] rounded-lg p-1 ml-auto">
+          <button onClick={() => setMode("online")} className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${mode === "online" ? "bg-[#6366f1] text-white" : "text-[#9090a8] hover:text-white"}`}>
+            🌐 {t("tools.title")}
+          </button>
+          <button onClick={() => setMode("desktop")} className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${mode === "desktop" ? "bg-[#6366f1] text-white" : "text-[#9090a8] hover:text-white"}`}>
+            💻 {t("desktop.title")}
+          </button>
+        </div>
+      </div>
 
-      {/* 工具选择 */}
+      {mode === "desktop" ? (
+        <DesktopTools t={t} />
+      ) : (
+      <>
       <div className="flex gap-2 mb-6 flex-wrap">
-        {tools.map((t) => (
+        {tools.map((tool) => (
           <button
-            key={t.id}
-            onClick={() => setActiveTool(t.id)}
+            key={tool.id}
+            onClick={() => setActiveTool(tool.id)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-colors ${
-              activeTool === t.id ? "bg-[#6366f1] text-white" : "bg-[#1a1a30] border border-[#2a2a44] text-[#9090a8] hover:text-white hover:border-[#6366f1]"
+              activeTool === tool.id ? "bg-[#6366f1] text-white" : "bg-[#1a1a30] border border-[#2a2a44] text-[#9090a8] hover:text-white hover:border-[#6366f1]"
             }`}
           >
-            <span>{t.icon}</span> {t.name}
+            <span>{tool.icon}</span> {t(tool.nameKey)}
           </button>
         ))}
       </div>
 
-      {/* 工具面板 */}
       <div className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-6 animate-fade-in">
         {/* JSON */}
         {activeTool === "json" && (
           <div className="space-y-4">
-            <h2 className="font-semibold">📋 JSON 格式化</h2>
+            <h2 className="font-semibold">{t("tools.json.name")}</h2>
             <textarea
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
               className="w-full h-32 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-[#6366f1] resize-none"
-              placeholder='{"hello": "world"}'
+              placeholder={t("tools.json.placeholder")}
             />
             <div className="flex gap-2">
-              <button onClick={handleJsonFormat} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">格式化</button>
-              <button onClick={() => { try { setJsonOutput(JSON.stringify(JSON.parse(jsonInput))); } catch { setJsonOutput("❌ 格式错误"); } }} className="px-4 py-2 border border-[#3a3a50] text-sm rounded-lg hover:border-[#6366f1]">压缩</button>
+              <button onClick={handleJsonFormat} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">{t("tools.json.format")}</button>
+              <button onClick={() => { try { setJsonOutput(JSON.stringify(JSON.parse(jsonInput))); } catch { setJsonOutput(t("tools.json.formatError")); } }} className="px-4 py-2 border border-[#3a3a50] text-sm rounded-lg hover:border-[#6366f1]">{t("tools.json.compress")}</button>
             </div>
             <div className="relative">
               <textarea readOnly value={jsonOutput} className="w-full h-40 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono text-[#22c55e] resize-none" />
@@ -161,13 +176,13 @@ export default function ToolsPage() {
         {/* Base64 */}
         {activeTool === "base64" && (
           <div className="space-y-4">
-            <h2 className="font-semibold">🔣 Base64 编解码</h2>
+            <h2 className="font-semibold">{t("tools.base64.name")}</h2>
             <div className="flex gap-2">
-              <button onClick={() => setB64Mode("encode")} className={`px-4 py-1.5 rounded-lg text-sm ${b64Mode === "encode" ? "bg-[#6366f1] text-white" : "border border-[#3a3a50]"}`}>编码</button>
-              <button onClick={() => setB64Mode("decode")} className={`px-4 py-1.5 rounded-lg text-sm ${b64Mode === "decode" ? "bg-[#6366f1] text-white" : "border border-[#3a3a50]"}`}>解码</button>
+              <button onClick={() => setB64Mode("encode")} className={`px-4 py-1.5 rounded-lg text-sm ${b64Mode === "encode" ? "bg-[#6366f1] text-white" : "border border-[#3a3a50]"}`}>{t("tools.base64.encode")}</button>
+              <button onClick={() => setB64Mode("decode")} className={`px-4 py-1.5 rounded-lg text-sm ${b64Mode === "decode" ? "bg-[#6366f1] text-white" : "border border-[#3a3a50]"}`}>{t("tools.base64.decode")}</button>
             </div>
-            <textarea value={b64Input} onChange={(e) => setB64Input(e.target.value)} className="w-full h-24 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-[#6366f1] resize-none" placeholder={b64Mode === "encode" ? "输入要编码的文本..." : "输入 Base64 字符串..."} />
-            <button onClick={handleBase64} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">{b64Mode === "encode" ? "编码" : "解码"}</button>
+            <textarea value={b64Input} onChange={(e) => setB64Input(e.target.value)} className="w-full h-24 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-[#6366f1] resize-none" placeholder={b64Mode === "encode" ? t("tools.base64.encodePlaceholder") : t("tools.base64.decodePlaceholder")} />
+            <button onClick={handleBase64} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">{b64Mode === "encode" ? t("tools.base64.encode") : t("tools.base64.decode")}</button>
             <div className="relative">
               <textarea readOnly value={b64Output} className="w-full h-24 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono text-[#22c55e] resize-none" />
               {b64Output && !b64Output.startsWith("❌") && (
@@ -182,19 +197,19 @@ export default function ToolsPage() {
         {/* Timestamp */}
         {activeTool === "timestamp" && (
           <div className="space-y-4">
-            <h2 className="font-semibold">🕐 时间戳转换</h2>
+            <h2 className="font-semibold">{t("tools.timestamp.name")}</h2>
             <input
               type="text"
               value={tsInput}
               onChange={(e) => setTsInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleTimestamp()}
               className="w-full bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-[#6366f1]"
-              placeholder="输入 Unix 时间戳 或 日期 (2026-05-14)..."
+              placeholder={t("tools.timestamp.placeholder")}
             />
             <div className="flex gap-2">
-              <button onClick={handleTimestamp} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">转换</button>
+              <button onClick={handleTimestamp} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">{t("tools.timestamp.convert")}</button>
               <button onClick={() => { setTsInput(Math.floor(Date.now() / 1000).toString()); handleTimestamp(); }} className="px-4 py-2 border border-[#3a3a50] text-sm rounded-lg hover:border-[#6366f1] flex items-center gap-1">
-                <RefreshCw size={14} /> 当前时间
+                <RefreshCw size={14} /> {t("tools.timestamp.currentTime")}
               </button>
             </div>
             <div className="relative">
@@ -211,7 +226,7 @@ export default function ToolsPage() {
         {/* Color */}
         {activeTool === "color" && (
           <div className="space-y-4">
-            <h2 className="font-semibold">🎨 颜色转换</h2>
+            <h2 className="font-semibold">{t("tools.color.name")}</h2>
             <div className="flex items-center gap-3">
               <input type="color" value={hexInput} onChange={(e) => { setHexInput(e.target.value); setTimeout(handleColor, 50); }} className="w-12 h-12 rounded-lg border-0 cursor-pointer bg-transparent" />
               <input
@@ -219,9 +234,9 @@ export default function ToolsPage() {
                 value={hexInput}
                 onChange={(e) => setHexInput(e.target.value)}
                 className="flex-1 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-[#6366f1]"
-                placeholder="#6366f1"
+                placeholder={t("tools.color.placeholder")}
               />
-              <button onClick={handleColor} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">转换</button>
+              <button onClick={handleColor} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">{t("tools.color.convert")}</button>
             </div>
             <div className="flex gap-3">
               <div className="flex-1 h-16 rounded-lg border border-[#2a2a44]" style={{ backgroundColor: /^#[0-9a-fA-F]{6}$/.test(hexInput) ? hexInput : "#1a1a30" }} />
@@ -240,11 +255,11 @@ export default function ToolsPage() {
         {/* MD5 */}
         {activeTool === "md5" && (
           <div className="space-y-4">
-            <h2 className="font-semibold">🔐 MD5 哈希</h2>
+            <h2 className="font-semibold">{t("tools.md5.name")}</h2>
             <textarea
               id="md5Input"
               className="w-full h-24 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-[#6366f1] resize-none"
-              placeholder="输入要加密的文本..."
+              placeholder={t("tools.md5.placeholder")}
             />
             <button onClick={async () => {
               const input = (document.getElementById("md5Input") as HTMLTextAreaElement)?.value || "";
@@ -259,7 +274,7 @@ export default function ToolsPage() {
               }
               const hashArray = Array.from(new Uint8Array(hashBuffer));
               (document.getElementById("md5Output") as HTMLTextAreaElement).value = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
-            }} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">生成哈希</button>
+            }} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">{t("tools.md5.generate")}</button>
             <div className="relative">
               <textarea readOnly id="md5Output" className="w-full h-24 bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono text-[#22c55e] resize-none" />
             </div>
@@ -269,9 +284,9 @@ export default function ToolsPage() {
         {/* Audio */}
         {activeTool === "audio" && (
           <div className="space-y-4">
-            <h2 className="font-semibold">🎵 音频格式转换</h2>
+            <h2 className="font-semibold">{t("tools.audio.name")}</h2>
             <p className="text-xs text-[#9090a8] bg-[#12122a] border border-[#2a2a44] rounded-lg p-3">
-              ⚠️ 浏览器端音频转换能力有限。支持将常见音频文件导出为 WAV 格式（无损）。如需 MP3/AAC/FLAC 等格式互转，建议使用桌面端 ffmpeg 或在线服务。
+              {t("tools.audio.warning")}
             </p>
             <div className="border-2 border-dashed border-[#3a3a50] rounded-xl p-6 text-center hover:border-[#6366f1] transition-colors">
               <input
@@ -283,8 +298,8 @@ export default function ToolsPage() {
               />
               <label htmlFor="audioFileInput" className="cursor-pointer">
                 <div className="text-4xl mb-2">🎵</div>
-                <p className="text-sm text-[#9090a8]">{audioFile ? audioFile.name : "点击选择音频文件"}</p>
-                {audioFile && <p className="text-xs text-[#606080] mt-1">{(audioFile.size / 1024 / 1024).toFixed(2)} MB · {audioFile.type || '未知格式'}</p>}
+                <p className="text-sm text-[#9090a8]">{audioFile ? audioFile.name : t("tools.audio.selectFile")}</p>
+                {audioFile && <p className="text-xs text-[#606080] mt-1">{(audioFile.size / 1024 / 1024).toFixed(2)} MB · {audioFile.type || t("tools.audio.unknownFormat")}</p>}
               </label>
             </div>
             {audioFile && (
@@ -308,7 +323,7 @@ export default function ToolsPage() {
                   disabled={audioExporting}
                   className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5] disabled:opacity-50"
                 >
-                  {audioExporting ? '转换中…' : '导出为 WAV'}
+                  {audioExporting ? t("tools.audio.converting") : t("tools.audio.exportWav")}
                 </button>
               </>
             )}
@@ -317,15 +332,15 @@ export default function ToolsPage() {
               download="ToolHub-AudioConverter.html"
               className="block w-full py-3 bg-gradient-to-r from-[#6366f1] to-[#22d3ee] text-white rounded-lg text-sm font-medium text-center hover:opacity-90 transition-opacity"
             >
-              💻 下载桌面版（支持 MP3/WAV/OGG/FLAC/AAC 互转 · ffmpeg）
+              {t("tools.audio.downloadDesktop")}
             </a>
-            <p className="text-[10px] text-[#606080] text-center">基于 ffmpeg.wasm · 双击 HTML 即可使用 · 支持数十种格式互转</p>
+            <p className="text-[10px] text-[#606080] text-center">{t("tools.audio.desktopNote")}</p>
             <details className="text-xs text-[#606080]">
-              <summary className="cursor-pointer hover:text-[#9090a8]">更多说明</summary>
+              <summary className="cursor-pointer hover:text-[#9090a8]">{t("tools.audio.moreInfo")}</summary>
               <ul className="list-disc pl-4 mt-1 space-y-0.5">
-                <li>桌面版下载后双击即用，离线可用</li>
-                <li>首次加载需联网下载 ffmpeg 核心 (~31MB)</li>
-                <li>加密/DRM 音频无法转换</li>
+                <li>{t("tools.audio.detail1")}</li>
+                <li>{t("tools.audio.detail2")}</li>
+                <li>{t("tools.audio.detail3")}</li>
               </ul>
             </details>
           </div>
@@ -334,11 +349,11 @@ export default function ToolsPage() {
         {/* QR Code */}
         {activeTool === "qrcode" && (
           <div className="space-y-4">
-            <h2 className="font-semibold">📱 二维码生成</h2>
+            <h2 className="font-semibold">{t("tools.qrcode.name")}</h2>
             <input
               id="qrInput"
               className="w-full bg-[#12122a] border border-[#3a3a50] rounded-lg p-3 text-sm font-mono focus:outline-none focus:border-[#6366f1]"
-              placeholder="输入网址或文本..."
+              placeholder={t("tools.qrcode.placeholder")}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   const v = (e.target as HTMLInputElement).value;
@@ -349,13 +364,64 @@ export default function ToolsPage() {
             <button onClick={() => {
               const v = (document.getElementById("qrInput") as HTMLInputElement)?.value || "";
               (document.getElementById("qrImg") as HTMLImageElement).src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(v)}`;
-            }} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">生成二维码</button>
+            }} className="px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm hover:bg-[#4f46e5]">{t("tools.qrcode.generate")}</button>
             <div className="flex justify-center">
               <img id="qrImg" alt="QR Code" className="w-48 h-48 rounded-lg bg-white p-2" />
             </div>
           </div>
         )}
       </div>
+      </>
+      )}
     </div>
+  );
+}
+
+function DesktopTools({ t }: { t: (key: string) => string }) {
+  const tools = [
+    {
+      key: "keymousego",
+      icon: "🎮",
+      file: "KeymouseGo.exe",
+      size: "7.7 MB",
+    },
+    {
+      key: "alphaclicker",
+      icon: "🖱️",
+      file: "AlphaClicker.exe",
+      size: "247 KB",
+    },
+  ];
+
+  return (
+    <>
+      <p className="text-sm text-[#9090a8] mb-6">{t("desktop.subtitle")}</p>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {tools.map((tool) => (
+          <div key={tool.key} className="bg-[#1a1a30] border border-[#2a2a44] rounded-2xl p-6 hover:border-[#6366f1]/50 transition-all">
+            <div className="flex items-start gap-4">
+              <div className="w-14 h-14 rounded-xl bg-[#12122a] border border-[#2a2a44] flex items-center justify-center text-2xl flex-shrink-0">
+                {tool.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-lg mb-1">{t(`desktop.${tool.key}.name`)}</h3>
+                <p className="text-sm text-[#9090a8] mb-3 leading-relaxed">{t(`desktop.${tool.key}.desc`)}</p>
+                <div className="flex items-center gap-3 text-xs text-[#606080] mb-4">
+                  <span className="flex items-center gap-1"><Monitor size={12} /> {t("desktop.size")}: {tool.size}</span>
+                </div>
+                <a
+                  href={`/downloads/${tool.file}`}
+                  download
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm font-medium hover:bg-[#4f46e5] transition-colors"
+                >
+                  <Download size={14} /> {t("desktop.download")}
+                </a>
+              </div>
+            </div>
+            <p className="text-[11px] text-[#606080] mt-4 pt-3 border-t border-[#2a2a44]">{t(`desktop.${tool.key}.note`)}</p>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
