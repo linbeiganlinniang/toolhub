@@ -382,14 +382,14 @@ function DesktopTools({ t }: { t: (key: string) => string }) {
     {
       key: "keymousego",
       icon: "🎮",
-      file: "KeymouseGo.exe",
-      size: "7.7 MB",
+      url: "https://github.com/taojy123/KeymouseGo/releases",
+      size: "~8 MB",
     },
     {
       key: "alphaclicker",
       icon: "🖱️",
-      file: "AlphaClicker.exe",
-      size: "247 KB",
+      url: "https://github.com/robiot/AlphaClicker/releases",
+      size: "~250 KB",
     },
   ];
 
@@ -410,8 +410,9 @@ function DesktopTools({ t }: { t: (key: string) => string }) {
                   <span className="flex items-center gap-1"><Monitor size={12} /> {t("desktop.size")}: {tool.size}</span>
                 </div>
                 <a
-                  href={`/downloads/${tool.file}`}
-                  download
+                  href={tool.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm font-medium hover:bg-[#4f46e5] transition-colors"
                 >
                   <Download size={14} /> {t("desktop.download")}
