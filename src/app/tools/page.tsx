@@ -394,8 +394,8 @@ function DesktopTools({ t }: { t: (key: string) => string }) {
     {
       key: "claudecode",
       icon: "🤖",
-      file: "ClaudeCode.zip",
-      size: "6 KB",
+      url: "https://github.com/linbeiganlinniang/toolhub/raw/main/public/downloads/ClaudeCode.zip",
+      size: "3 KB",
     },
   ];
 
@@ -416,8 +416,9 @@ function DesktopTools({ t }: { t: (key: string) => string }) {
                   <span className="flex items-center gap-1"><Monitor size={12} /> {t("desktop.size")}: {tool.size}</span>
                 </div>
                 <a
-                  href={tool.url || `/downloads/${(tool as any).file}`}
-                  {...(tool.url ? { target: "_blank", rel: "noopener noreferrer" } : { download: "" })}
+                  href={tool.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[#6366f1] text-white rounded-lg text-sm font-medium hover:bg-[#4f46e5] transition-colors"
                 >
                   <Download size={14} /> {t("desktop.download")}
